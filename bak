@@ -1,0 +1,44 @@
+FROM archlinux/archlinux:base-devel
+#LABEL maintainer="test.cab <git@test.cab>"
+
+RUN pacman -Syu --needed --noconfirm git wget curl texlive-basic
+
+# Create a makepkg user
+ARG user=texmate
+RUN useradd --system --create-home $user \
+  && echo "$user ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/$user
+
+# Switch to root user for installation
+USER root
+
+# Set the working directory
+WORKDIR /home/$user
+
+# Download and install TeX Live
+RUN wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz; \
+	mkdir ~/install-tl-unx; \
+	tar -xvf install-tl-unx.tar.gz -C ~/install-tl-unx --strip-components=1; \
+    echo "selected_scheme scheme-base" >> ~/install-tl-unx/texlive.profile; \
+	~/install-tl-unx/install-tl -profile ~/install-tl-unx/texlive.profile; \
+    rm -r ~/install-tl-unx; \
+	rm install-tl-unx.tar.gz
+
+# Set the PATH for TeX Live
+ENV PATH="/usr/local/texlive/2025/bin/x86_64-linux:${PATH}"
+RUN tlmgr install latexmk
+# Switch back to the makepkg user
+USER $user
+
+# Uncomment if you want to install latexmk
+
+# Uncomment if you want to set a volume
+# VOLUME ["/data"]
+
+# Uncomment if you want to install yay
+# RUN git clone https://aur.archlinux.org/yay.git \
+#   && cd yay \
+#   && makepkg -sri --needed --noconfirm \
+#   && cd \
+#   # Clean up
+#   && yay --noconfirm -S texlive-full \
+#   && rm -rf .cache yay 
