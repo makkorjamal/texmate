@@ -13,6 +13,8 @@ RUN apk update && apk add --no-cache make \
     font-cursor-misc \
     xauth \
     xterm \
+    dbus \
+    dbus-openrc \
     websockify \
     novnc \
     musl-dev \
@@ -21,19 +23,26 @@ RUN apk update && apk add --no-cache make \
     libxinerama-dev \
     eudev \
     mesa-dri-gallium \
-    xvfb
+    alacritty
+#    texlive-full
 
 RUN mkdir -p ~/.config/ && mkdir -p ~/.config/tigervnc/ && \
     echo "texmate" | vncpasswd -f > ~/.config/tigervnc/passwd && \
     chmod 600 ~/.config/tigervnc/passwd && \
     mkdir -p /usr/share/xsessions/
-RUN git clone https://git.suckless.org/dwm && \
-    cd dwm && \
+RUN git clone https://git.suckless.org/dmenu
+RUN    cd dmenu && \
+    make install
+
+RUN git clone https://git.suckless.org/dwm
+COPY dotfiles/config.def.h /dwm
+RUN    cd dwm && \
     make install && \
     echo 'session=dwm' >> ~/.config/tigervnc/config
 COPY dwm.desktop /usr/share/xsessions/
 #
 COPY start-vnc.sh /usr/local/bin/
+COPY bin/texpresso /usr/local/bin/
 RUN chmod +x /usr/local/bin/start-vnc.sh
 
 EXPOSE 5901 6080
