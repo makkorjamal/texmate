@@ -12,6 +12,8 @@ RUN apk update && apk add --no-cache make \
     font-misc-misc \
     font-cursor-misc \
     xauth \
+    bash \
+    bash-completion \
     xterm \
     dbus \
     dbus-openrc \
@@ -25,7 +27,7 @@ RUN apk update && apk add --no-cache make \
     mesa-dri-gallium \
     alacritty
 #    texlive-full
-
+SHELL ["/bin/bash", "-c"]
 RUN mkdir -p ~/.config/ && mkdir -p ~/.config/tigervnc/ && \
     echo "texmate" | vncpasswd -f > ~/.config/tigervnc/passwd && \
     chmod 600 ~/.config/tigervnc/passwd && \
@@ -38,7 +40,8 @@ RUN git clone https://git.suckless.org/dwm
 COPY dotfiles/config.def.h /dwm
 RUN    cd dwm && \
     make install && \
-    echo 'session=dwm' >> ~/.config/tigervnc/config
+    echo 'session=dwm' >> ~/.config/tigervnc/config && \
+    echo 'securitytypes=None' >> ~/.config/tigervnc/config
 COPY dwm.desktop /usr/share/xsessions/
 #
 COPY start-vnc.sh /usr/local/bin/
