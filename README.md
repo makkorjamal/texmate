@@ -66,3 +66,4 @@ this will install coc dependencies for nvim autocomplete.
 ## Quick Start
 The video below shown how to Compile a Tex file in this docker image.
 
+https://raw.githubusercontent.com/makkorjamal/texmate/refs/heads/main/screenshots/Screencast_20250801_234510.mp4
