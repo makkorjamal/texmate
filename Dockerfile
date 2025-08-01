@@ -1,5 +1,7 @@
 FROM alpine:latest
 
+ARG user=root
+WORKDIR /$user
 RUN apk update && apk add --no-cache make \
     gcc \
     neovim \
@@ -11,43 +13,59 @@ RUN apk update && apk add --no-cache make \
     xf86-input-libinput \
     font-misc-misc \
     font-cursor-misc \
+    openrc \
+    dbus \
+    luarocks \
+    dbus-openrc \
     xauth \
     bash \
     bash-completion \
     xterm \
-    dbus \
-    dbus-openrc \
+    nginx \
     websockify \
     novnc \
     musl-dev \
+    mupdf \
     libx11-dev \
     libxft-dev \
     libxinerama-dev \
     eudev \
+    nodejs \
+    npm \
     mesa-dri-gallium \
-    alacritty
-#    texlive-full
-SHELL ["/bin/bash", "-c"]
-RUN mkdir -p ~/.config/ && mkdir -p ~/.config/tigervnc/ && \
-    echo "texmate" | vncpasswd -f > ~/.config/tigervnc/passwd && \
-    chmod 600 ~/.config/tigervnc/passwd && \
-    mkdir -p /usr/share/xsessions/
+    alacritty \
+    texlive-full
+
 RUN git clone https://git.suckless.org/dmenu
-RUN    cd dmenu && \
+RUN git clone https://git.suckless.org/dwm
+
+RUN mkdir -p ~/.config/ && \
+    mkdir -p ~/.config/tigervnc/ && \
+    mkdir -p ~/.config/nvim/
+
+COPY dotfiles/nvim .config/nvim
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
+COPY dwm.desktop /usr/share/xsessions/
+COPY start-vnc.sh /usr/local/bin/
+COPY dotfiles/config.def.h dwm
+
+
+RUN cd dwm && \
+    make install
+RUN cd dmenu && \
     make install
 
-RUN git clone https://git.suckless.org/dwm
-COPY dotfiles/config.def.h /dwm
-RUN    cd dwm && \
-    make install && \
-    echo 'session=dwm' >> ~/.config/tigervnc/config && \
-    echo 'securitytypes=None' >> ~/.config/tigervnc/config
-COPY dwm.desktop /usr/share/xsessions/
-#
-COPY start-vnc.sh /usr/local/bin/
-COPY bin/texpresso /usr/local/bin/
-RUN chmod +x /usr/local/bin/start-vnc.sh
+RUN echo "texmate" | vncpasswd -f > ~/.config/tigervnc/passwd && \
+    echo -e "alacritty -e nvim &\nmupdf &\nnginx&" >> .xprofile && \
+    chmod 600 ~/.config/tigervnc/passwd && \
+    mkdir -p /usr/share/xsessions/
+RUN echo 'session=dwm' >> ~/.config/tigervnc/config && \
+    echo 'securitytypes=None' >> ~/.config/tigervnc/config && \
+    echo 'localhost=no' >> ~/.config/tigervnc/config
+RUN chmod +x /usr/local/bin/start-vnc.sh && \
+    mkdir -p /www
 
-EXPOSE 5901 6080
+VOLUME /data
+EXPOSE 5901 6080 80
 #
-CMD ["/usr/local/bin/start-vnc.sh"]
+CMD [ "/usr/local/bin/start-vnc.sh"]
