@@ -53,7 +53,7 @@ After running the Docker. Go to this to the browser
 ```docker
 http://localhost:6080/vnc.html
 ```
-you can call a terminal by clicking on ctrl+p and typing alacritty. Then go to 
+you can call a terminal by clicking on alt+p and typing alacritty. Then go to 
 ```docker
 cd .local/share/nvim/lazy/coc.nvim/
 ```
